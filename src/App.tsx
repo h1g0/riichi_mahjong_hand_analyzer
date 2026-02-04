@@ -320,6 +320,65 @@ function App() {
         <Stack spacing={3}>
           <Paper elevation={2} sx={{ p: 3 }}>
             <Stack spacing={1}>
+              <Typography variant="h5">{t("table")}</Typography>
+            </Stack>
+            <Divider sx={{ my: 2 }} />
+            <Box
+              sx={{
+                display: "grid",
+                gap: 2,
+                gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" },
+              }}
+            >
+              <FormControl fullWidth>
+                <InputLabel>{t("roundWind")}</InputLabel>
+                <Select
+                  value={roundWind}
+                  label={t("roundWind")}
+                  onChange={(e) => setRoundWind(e.target.value)}
+                >
+                  {["east", "south", "west", "north"].map((w) => (
+                    <MenuItem key={w} value={w}>
+                      {t(`wind${w[0].toUpperCase()}${w.slice(1)}`)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                type="number"
+                label={t("honba")}
+                value={honbaCount}
+                onChange={(e) => setHonbaCount(Math.max(0, Number(e.target.value) || 0))}
+                inputProps={{ min: 0 }}
+              />
+              <TextField
+                type="number"
+                label={t("riichiSticks")}
+                value={riichiSticks}
+                onChange={(e) => setRiichiSticks(Math.max(0, Number(e.target.value) || 0))}
+                inputProps={{ min: 0 }}
+              />
+              <TextField
+                fullWidth
+                label={t("dora")}
+                value={doraIndicatorsInput}
+                onChange={(e) => setDoraIndicatorsInput(e.target.value)}
+                placeholder="3m7p1z"
+                helperText={t("doraHelp")}
+              />
+              <TextField
+                fullWidth
+                label={t("uraDora")}
+                value={uraIndicatorsInput}
+                onChange={(e) => setUraIndicatorsInput(e.target.value)}
+                placeholder="4m2p3z"
+                helperText={t("doraHelp")}
+              />
+            </Box>
+          </Paper>
+
+          <Paper elevation={2} sx={{ p: 3 }}>
+            <Stack spacing={1}>
               <Typography variant="h5">{t("handInput")}</Typography>
             </Stack>
             <Divider sx={{ my: 2 }} />
@@ -410,22 +469,6 @@ function App() {
                 </FormControl>
               </Box>
               <Box>
-                <FormControl fullWidth>
-                  <InputLabel>{t("roundWind")}</InputLabel>
-                  <Select
-                    value={roundWind}
-                    label={t("roundWind")}
-                    onChange={(e) => setRoundWind(e.target.value)}
-                  >
-                    {["east", "south", "west", "north"].map((w) => (
-                      <MenuItem key={w} value={w}>
-                        {t(`wind${w[0].toUpperCase()}${w.slice(1)}`)}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-              <Box>
                 <TextField
                   fullWidth
                   label={t("winTile")}
@@ -433,26 +476,6 @@ function App() {
                   onChange={(e) => setWinTileInput(e.target.value)}
                   placeholder="5m"
                   helperText={t("winTileHelp")}
-                />
-              </Box>
-              <Box>
-                <TextField
-                  fullWidth
-                  label={t("dora")}
-                  value={doraIndicatorsInput}
-                  onChange={(e) => setDoraIndicatorsInput(e.target.value)}
-                  placeholder="3m7p1z"
-                  helperText={t("doraHelp")}
-                />
-              </Box>
-              <Box>
-                <TextField
-                  fullWidth
-                  label={t("uraDora")}
-                  value={uraIndicatorsInput}
-                  onChange={(e) => setUraIndicatorsInput(e.target.value)}
-                  placeholder="4m2p3z"
-                  helperText={t("doraHelp")}
                 />
               </Box>
             </Box>
@@ -729,20 +752,6 @@ function App() {
             <FormControlLabel
               control={<Switch checked={kiriageMangan} onChange={(e) => setKiriageMangan(e.target.checked)} />}
               label={t("kiriageMangan")}
-            />
-            <TextField
-              type="number"
-              label={t("honba")}
-              value={honbaCount}
-              onChange={(e) => setHonbaCount(Math.max(0, Number(e.target.value) || 0))}
-              inputProps={{ min: 0 }}
-            />
-            <TextField
-              type="number"
-              label={t("riichiSticks")}
-              value={riichiSticks}
-              onChange={(e) => setRiichiSticks(Math.max(0, Number(e.target.value) || 0))}
-              inputProps={{ min: 0 }}
             />
             <FormControlLabel
               control={
