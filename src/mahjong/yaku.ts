@@ -210,10 +210,14 @@ const isRyanmenWait = (pair: TileIndex, melds: Meld[], winTile: TileIndex | null
   for (const m of melds) {
     if (m.type !== "chi") continue;
     const [a, b, c] = m.tiles;
-    if (winTile === b) continue;
-    if (winTile !== a && winTile !== c) continue;
-    const startNum = tileNumber(a);
-    if (startNum === 1 || startNum === 7) return false;
+    if (winTile !== a && winTile !== b && winTile !== c) continue;
+    if (winTile === b) return false; // kanchan
+    const remain1 = winTile === a ? b : a;
+    const remain2 = winTile === a ? c : b;
+    const r1 = tileNumber(remain1);
+    const r2 = tileNumber(remain2);
+    // Penchan only when remaining are 1-2 or 8-9
+    if ((r1 === 1 && r2 === 2) || (r1 === 8 && r2 === 9)) return false;
     return true;
   }
   return false;
@@ -232,12 +236,15 @@ const waitFu = (pair: TileIndex, melds: Meld[], winTile: TileIndex | null) => {
       foundKanchanOrPenchan = true;
       continue;
     }
-    const startNum = tileNumber(a);
-    if ((winTile === a && startNum === 1) || (winTile === c && startNum === 7)) {
+    const remain1 = winTile === a ? b : a;
+    const remain2 = winTile === a ? c : b;
+    const r1 = tileNumber(remain1);
+    const r2 = tileNumber(remain2);
+    if ((r1 === 1 && r2 === 2) || (r1 === 8 && r2 === 9)) {
       foundKanchanOrPenchan = true;
-      continue;
+    } else {
+      foundRyanmen = true;
     }
-    foundRyanmen = true;
   }
   if (foundRyanmen) return 0;
   if (foundKanchanOrPenchan) return 2;
