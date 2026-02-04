@@ -46,6 +46,7 @@
   "enter14": "Enter a 14-tile hand to evaluate yaku.",
   "enter14WithKan": "Enter a {{count}}-tile hand to evaluate yaku.",
   "tips": "Quick Tips",
+  "table": "Table",
   "tip1": "Use notation like 123m456p789s12344z.",
   "tip2": "1m–9m: characters 1–9 / 1p–9p: dots 1–9 / 1s–9s: bamboo 1–9 / 1z–7z: east-south-west-north-white-green-red.",
   "lang": "Language",
