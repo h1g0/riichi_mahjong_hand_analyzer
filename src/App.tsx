@@ -12,6 +12,8 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
+  IconButton,
+  Menu,
   Paper,
   Switch,
   TextField,
@@ -31,6 +33,7 @@ import {
   ListItemIcon,
 } from "@mui/material";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import MenuIcon from "@mui/icons-material/Menu";
 import { useTranslation } from "react-i18next";
 import type { Meld } from "./mahjong/tiles";
 import {
@@ -84,12 +87,21 @@ function App() {
   const [kiriageMangan, setKiriageMangan] = useState(true);
   const [honbaCount, setHonbaCount] = useState(0);
   const [riichiSticks, setRiichiSticks] = useState(0);
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [doraIndicatorsInput, setDoraIndicatorsInput] = useState("");
   const [uraIndicatorsInput, setUraIndicatorsInput] = useState("");
 
   const setLanguage = (next: "ja" | "en") => {
     setLang(next);
     void i18n.changeLanguage(next);
+  };
+
+  const openMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setMenuAnchor(event.currentTarget);
+  };
+
+  const closeMenu = () => {
+    setMenuAnchor(null);
   };
 
   const displayYakuName = (name: string) => t(`yakuNames.${name}`, name);
@@ -282,39 +294,41 @@ function App() {
         <Toolbar>
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="h6">{t("title")}</Typography>
-            <Typography variant="body2" sx={{ opacity: 0.8 }}>
-              {t("subtitle")}
-            </Typography>
           </Box>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Button
-              variant="outlined"
-              color="inherit"
-              size="small"
-              onClick={() => setSettingsOpen(true)}
-            >
-              {t("settings")}
-            </Button>
-            <Typography variant="body2">{t("lang")}</Typography>
-            <Button
-              variant={lang === "ja" ? "contained" : "outlined"}
-              color="inherit"
-              size="small"
-              onClick={() => setLanguage("ja")}
-            >
-              日本語
-            </Button>
-            <Button
-              variant={lang === "en" ? "contained" : "outlined"}
-              color="inherit"
-              size="small"
-              onClick={() => setLanguage("en")}
-            >
-              English
-            </Button>
-          </Stack>
+          <IconButton color="inherit" onClick={openMenu}>
+            <MenuIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
+      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={closeMenu}>
+        <MenuItem
+          onClick={() => {
+            setSettingsOpen(true);
+            closeMenu();
+          }}
+        >
+          {t("settings")}
+        </MenuItem>
+        <MenuItem disabled>{t("lang")}</MenuItem>
+        <MenuItem
+          selected={lang === "ja"}
+          onClick={() => {
+            setLanguage("ja");
+            closeMenu();
+          }}
+        >
+          日本語
+        </MenuItem>
+        <MenuItem
+          selected={lang === "en"}
+          onClick={() => {
+            setLanguage("en");
+            closeMenu();
+          }}
+        >
+          English
+        </MenuItem>
+      </Menu>
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Stack spacing={3}>
