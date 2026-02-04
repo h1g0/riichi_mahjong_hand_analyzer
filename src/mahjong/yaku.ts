@@ -42,6 +42,7 @@ type EvalInput = {
   kuipinfu30: boolean;
   isTsumo: boolean;
   isRiichi: boolean;
+  isDoubleRiichi: boolean;
   isIppatsu: boolean;
   isRinshan: boolean;
   isHaitei: boolean;
@@ -424,9 +425,10 @@ const evaluateStandard = (
     yakuman.push({ name: "Shousuushi", yakuman: 1 });
   }
 
-  if (menzen && input.isRiichi) yakus.push({ name: "Riichi", han: 1 });
+  if (menzen && input.isDoubleRiichi) yakus.push({ name: "Double Riichi", han: 2 });
+  else if (menzen && input.isRiichi) yakus.push({ name: "Riichi", han: 1 });
   if (menzen && input.isTsumo) yakus.push({ name: "Menzen Tsumo", han: 1 });
-  if (menzen && input.isRiichi && input.isIppatsu && input.allowIppatsuUra) {
+  if (menzen && (input.isRiichi || input.isDoubleRiichi) && input.isIppatsu && input.allowIppatsuUra) {
     yakus.push({ name: "Ippatsu", han: 1 });
   }
   if (input.isRinshan) yakus.push({ name: "Rinshan Kaihou", han: 1 });

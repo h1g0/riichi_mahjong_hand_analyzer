@@ -61,6 +61,7 @@ function App() {
   const [winTileInput, setWinTileInput] = useState("");
   const [isTsumo, setIsTsumo] = useState(false);
   const [isRiichi, setIsRiichi] = useState(false);
+  const [isDoubleRiichi, setIsDoubleRiichi] = useState(false);
   const [isIppatsu, setIsIppatsu] = useState(false);
   const [isRinshan, setIsRinshan] = useState(false);
   const [isHaitei, setIsHaitei] = useState(false);
@@ -209,6 +210,7 @@ function App() {
       kiriageMangan,
       isTsumo,
       isRiichi,
+      isDoubleRiichi,
       isIppatsu,
       isRinshan,
       isHaitei,
@@ -241,6 +243,7 @@ function App() {
     kiriageMangan,
     isTsumo,
     isRiichi,
+    isDoubleRiichi,
     isIppatsu,
     isRinshan,
     isHaitei,
@@ -463,7 +466,22 @@ function App() {
             >
               {[
                 { label: t("tsumo"), value: isTsumo, set: setIsTsumo },
-                { label: t("riichi"), value: isRiichi, set: setIsRiichi },
+                {
+                  label: t("riichi"),
+                  value: isRiichi,
+                  set: (v: boolean) => {
+                    setIsRiichi(v);
+                    if (v) setIsDoubleRiichi(false);
+                  },
+                },
+                {
+                  label: t("doubleRiichi"),
+                  value: isDoubleRiichi,
+                  set: (v: boolean) => {
+                    setIsDoubleRiichi(v);
+                    if (v) setIsRiichi(false);
+                  },
+                },
                 { label: t("ippatsu"), value: isIppatsu, set: setIsIppatsu },
                 { label: t("rinshan"), value: isRinshan, set: setIsRinshan },
                 { label: t("haitei"), value: isHaitei, set: setIsHaitei },
