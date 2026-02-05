@@ -557,28 +557,35 @@ export const evaluateYaku = (input: EvalInput) => {
     };
   }
 
-  if (melds.length === 0 && isChiitoi(input.counts, input.allowChiitoiWithQuads)) {
-    const dora =
-      doraFromIndicators(input.counts, input.doraIndicators) +
-      (input.redDoraEnabled ? input.redDoraCount : 0) +
-      (input.allowIppatsuUra && input.isRiichi
-        ? doraFromIndicators(input.counts, input.uraIndicators)
-        : 0);
-    return {
-      isAgari: true,
-      yaku: [{ name: "Chiitoitsu", han: 2 }],
-      yakuman: [],
-      doraHan: dora,
-      fu: 25,
-      fuRounded: 25,
-      totalHan: 2 + dora,
-      score: null,
-      notes,
-    };
+  const chiitoiPossible = melds.length === 0 && isChiitoi(input.counts, input.allowChiitoiWithQuads);
+  if (chiitoiPossible) {
+    const chiitoiYakuman: Yakuman[] = [];
+    if (isAllHonors(input.counts)) chiitoiYakuman.push({ name: "Tsuuiisou", yakuman: 1 });
+    if (isAllTerminals(input.counts)) chiitoiYakuman.push({ name: "Chinroutou", yakuman: 1 });
+    if (isAllGreen(input.counts)) chiitoiYakuman.push({ name: "Ryuuiisou", yakuman: 1 });
+    if (chiitoiYakuman.length > 0) {
+      const dora =
+        doraFromIndicators(input.counts, input.doraIndicators) +
+        (input.redDoraEnabled ? input.redDoraCount : 0) +
+        (input.allowIppatsuUra && input.isRiichi
+          ? doraFromIndicators(input.counts, input.uraIndicators)
+          : 0);
+      return {
+        isAgari: true,
+        yaku: [],
+        yakuman: chiitoiYakuman,
+        doraHan: dora,
+        fu: null,
+        fuRounded: null,
+        totalHan: null,
+        score: null,
+        notes,
+      };
+    }
   }
 
   const decompositions = generateDecompositions(input.counts, melds);
-  if (decompositions.length === 0) {
+  if (decompositions.length === 0 && !chiitoiPossible) {
     return { isAgari: false, yaku: [], yakuman: [], notes };
   }
 
@@ -587,8 +594,12 @@ export const evaluateYaku = (input: EvalInput) => {
   let bestScore = -1;
   let bestYakumanScore = -1;
   let bestDecomposition: Decomposition | null = null;
+  let bestIsChiitoi = false;
+  let bestChiitoiHan = 0;
+  let hadDecomposition = false;
 
   for (const d of decompositions) {
+    hadDecomposition = true;
     const { yakus, yakuman } = evaluateStandard(d, input, winTile);
     const yakumanScore = sumYakuman(yakuman);
     const hanScore = sumHan(yakus);
@@ -610,6 +621,39 @@ export const evaluateYaku = (input: EvalInput) => {
     }
   }
 
+  if (chiitoiPossible) {
+    const { suits, honors } = suitSummary(input.counts);
+    const chiitoiYakus: Yaku[] = [{ name: "Chiitoitsu", han: 2 }];
+    if (suits.length === 1 && honors) chiitoiYakus.push({ name: "Honitsu", han: 3 });
+    if (suits.length === 1 && !honors) chiitoiYakus.push({ name: "Chinitsu", han: 6 });
+    if (input.counts.every((c, i) => (c === 0 ? true : isSimple(i)))) {
+      if (input.allowOpenTanyao) {
+        chiitoiYakus.push({ name: "Tanyao", han: 1 });
+      }
+    }
+    if (input.counts.every((c, i) => (c === 0 ? true : isTerminal(i) || isHonor(i)))) {
+      chiitoiYakus.push({ name: "Honroutou", han: 2 });
+    }
+    const chiitoiHan = sumHan(chiitoiYakus);
+
+    if (!hadDecomposition) {
+      bestYaku = chiitoiYakus;
+      bestYakuman = [];
+      bestScore = chiitoiHan;
+      bestYakumanScore = 0;
+      bestDecomposition = null;
+      bestIsChiitoi = true;
+      bestChiitoiHan = chiitoiHan;
+    } else if (bestYakumanScore === 0 && bestScore < chiitoiHan) {
+      bestYaku = chiitoiYakus;
+      bestYakuman = [];
+      bestScore = chiitoiHan;
+      bestDecomposition = null;
+      bestIsChiitoi = true;
+      bestChiitoiHan = chiitoiHan;
+    }
+  }
+
   if (bestYaku.length === 0 && bestYakuman.length === 0) {
     notes.push("No yaku found for the current decomposition set.");
   }
@@ -624,7 +668,11 @@ export const evaluateYaku = (input: EvalInput) => {
   let fu: number | null = null;
   let fuRounded: number | null = null;
   let totalHan: number | null = null;
-  if (bestYakuman.length === 0 && bestDecomposition) {
+  if (bestYakuman.length === 0 && bestIsChiitoi) {
+    fu = 25;
+    fuRounded = 25;
+    totalHan = bestChiitoiHan + dora;
+  } else if (bestYakuman.length === 0 && bestDecomposition) {
     const { pair, melds: usedMelds } = bestDecomposition;
     const seat = windToIndex(input.seatWind);
     const round = windToIndex(input.roundWind);
