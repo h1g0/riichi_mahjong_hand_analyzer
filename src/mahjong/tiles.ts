@@ -77,6 +77,28 @@ export const parseTiles = (input: string) => {
   return counts;
 };
 
+export const countRedFives = (input: string) => {
+  const compact = input.replace(/\s+/g, "").toLowerCase();
+  let digits = "";
+  let total = 0;
+  for (const ch of compact) {
+    if (ch >= "0" && ch <= "9") {
+      digits += ch;
+      continue;
+    }
+    if (ch === "m" || ch === "p" || ch === "s" || ch === "z") {
+      if (digits.length > 0) {
+        for (const d of digits) {
+          if (d === "0") total += 1;
+        }
+        digits = "";
+      }
+      continue;
+    }
+  }
+  return total;
+};
+
 export const parseMeld = (input: string, open = true): Meld | null => {
   const compact = input.replace(/\s+/g, "").toLowerCase();
   if (compact.length < 3) return null;

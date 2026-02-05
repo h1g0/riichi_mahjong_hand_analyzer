@@ -38,6 +38,7 @@ import { useTranslation } from "react-i18next";
 import type { Meld } from "./mahjong/tiles";
 import {
   countsFromMelds,
+  countRedFives,
   emptyCounts,
   hasTooManyTiles,
   parseMeld,
@@ -171,11 +172,11 @@ function App() {
 
   const redDoraCount = useMemo(() => {
     if (!redDoraEnabled) return 0;
-    const countRed = (s: string) => (s.match(/0[mpzs]/gi) ?? []).length;
-    let total = countRed(handInput);
-    for (const m of melds) total += countRed(m.text);
+    let total = countRedFives(handInput);
+    for (const m of melds) total += countRedFives(m.text);
+    if (winTileInput) total += countRedFives(winTileInput);
     return total;
-  }, [handInput, melds, redDoraEnabled]);
+  }, [handInput, melds, redDoraEnabled, winTileInput]);
 
   const shanten = useMemo(() => {
     const openMelds = parsed.meldList.length;
@@ -609,7 +610,10 @@ function App() {
                           <Chip key={y.name} label={`${displayYakuName(y.name)} (${y.han} ${t("han")})`} />
                         ))}
                         {yakuResult.yakuman.length === 0 && (yakuResult.doraHan ?? 0) > 0 && (
-                          <Chip label={`${t("doraChip")} (+${yakuResult.doraHan})`} color="primary" />
+                          <Chip
+                            label={`${t("doraChip")} (${yakuResult.doraHan}${t("han")})`}
+                            color="primary"
+                          />
                         )}
                       </Stack>
                     )}
