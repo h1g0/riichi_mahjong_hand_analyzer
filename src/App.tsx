@@ -416,7 +416,6 @@ function App() {
               </Box>
               <Box>
                 <Stack spacing={1}>
-                  <Typography variant="subtitle1">{t("melds")}</Typography>
                   {melds.map((m) => (
                     <Paper key={m.id} variant="outlined" sx={{ p: 1.5 }}>
                       <Box
@@ -430,6 +429,7 @@ function App() {
                         <Box sx={{ gridColumn: { xs: "1 / -1", md: "span 6" } }}>
                           <TextField
                             fullWidth
+                            label={t("melds")}
                             value={m.text}
                             onChange={(e) => updateMeld(m.id, { text: e.target.value })}
                             placeholder={t("meldPlaceholder")}
@@ -455,14 +455,14 @@ function App() {
                           })()}
                         </Box>
                         <Box sx={{ gridColumn: { xs: "1 / -1", md: "span 3" } }}>
-                          <Button variant="outlined" color="secondary" onClick={() => removeMeld(m.id)}>
+                          <Button variant="outlined" color="warning" onClick={() => removeMeld(m.id)}>
                             {t("remove")}
                           </Button>
                         </Box>
                       </Box>
                     </Paper>
                   ))}
-                  <Button variant="contained" onClick={addMeld}>
+                  <Button variant="contained" onClick={addMeld} disabled={melds.length >= 4}>
                     {t("addMeld")}
                   </Button>
                 </Stack>
