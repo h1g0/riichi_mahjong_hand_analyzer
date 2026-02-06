@@ -92,7 +92,8 @@
     "baiman": "Baiman",
     "sanbaiman": "Sanbaiman",
     "kazoe": "Kazoe Yakuman",
-    "yakuman": "Yakuman"
+    "yakuman": "Yakuman",
+    "doubleYakuman": "Double Yakuman"
   },
   "yakumanTimes": "x",
   "seat": "Seat",
@@ -112,6 +113,7 @@
     "Chuuren Poutou": "Nine Gates",
     "Suu Kantsu": "Four Kans",
     "Suu Ankou": "Four Concealed Triplets",
+    "Suu Ankou Tanki": "Four Concealed Triplets (Single Wait)",
     "Daisangen": "Big Three Dragons",
     "Shousangen": "Small Three Dragons",
     "Daisuushi": "Big Four Winds",

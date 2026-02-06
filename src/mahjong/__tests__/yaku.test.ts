@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseTiles } from "../tiles";
+import { parseSingleTile, parseTiles } from "../tiles";
 import { evaluateYaku } from "../yaku";
 
 const evaluate = (counts: number[], overrides: Partial<Parameters<typeof evaluateYaku>[0]> = {}) =>
@@ -187,5 +187,42 @@ describe("yaku evaluation", () => {
     expect(result.totalHan).toBeNull();
     expect(result.fuRounded).toBeNull();
     expect(result.score).toBeNull();
+  });
+
+  it("treats suu ankou as not valid on ron without tanki", () => {
+    const counts = parseTiles("111222m333p444s55z");
+    const result = evaluate(counts, { winTile: parseSingleTile("3p"), isTsumo: false });
+    const yakumanNames = result.yakuman.map((y) => y.name);
+    const yakuNames = result.yaku.map((y) => y.name);
+    expect(yakumanNames).not.toContain("Suu Ankou");
+    expect(yakuNames).toContain("San Ankou");
+    expect(yakuNames).toContain("Toitoi");
+    expect(result.totalHan).toBe(4);
+    expect(result.fuRounded).toBe(60);
+    expect(result.score?.limit).toBe("mangan");
+    expect(result.score?.ron).toBe(12000);
+  });
+
+  it("treats suu ankou tanki on ron as double yakuman", () => {
+    const counts = parseTiles("111222m333p444s55z");
+    const result = evaluate(counts, { winTile: parseSingleTile("5z"), isTsumo: false });
+    const yakuman = result.yakuman.find((y) => y.name === "Suu Ankou Tanki");
+    expect(yakuman?.yakuman).toBe(2);
+    expect(result.totalHan).toBeNull();
+    expect(result.fuRounded).toBeNull();
+    expect(result.score?.limit).toBe("doubleYakuman");
+    expect(result.score?.ron).toBe(96000);
+  });
+
+  it("treats suu ankou on tsumo as yakuman", () => {
+    const counts = parseTiles("111222m333p444s55z");
+    const result = evaluate(counts, { isTsumo: true });
+    const yakuman = result.yakuman.find((y) => y.name === "Suu Ankou");
+    expect(yakuman?.yakuman).toBe(1);
+    expect(result.totalHan).toBeNull();
+    expect(result.fuRounded).toBeNull();
+    expect(result.score?.limit).toBe("yakuman");
+    expect(result.score?.ron).toBeNull();
+    expect(result.score?.tsumo?.total).toBe(48000);
   });
 });

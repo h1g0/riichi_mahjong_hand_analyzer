@@ -621,50 +621,99 @@ function App() {
                   <Box>
                     <Typography variant="h5">
                       {yakuResult.yakuman.length > 0
-                        ? yakumanLabel(
+                        ? `${yakumanLabel(
                           yakuResult.yakuman.reduce((max, y) => Math.max(max, y.yakuman), 1)
-                        )
-                        : `${yakuResult.yaku.reduce((sum, y) => sum + y.han, 0) + (yakuResult.doraHan ?? 0)} ${t(
-                          "han"
-                        )}`}{" "}
-                      {yakuResult.yakuman.length === 0 && yakuResult.fuRounded !== null
-                        ? ` / ${yakuResult.fuRounded} ${t("fu")}${yakuResult.score?.limit ? ` (${t(`limit.${yakuResult.score.limit}`)})` : ""
-                        }`
-                        : ""}
+                        )} ${yakuResult.score
+                          ? yakuResult.score.tsumo
+                            ? yakuResult.score.tsumo.total +
+                            honbaCount * 300 +
+                            riichiSticks * 1000
+                            : (yakuResult.score.ron ?? 0) +
+                            honbaCount * 300 +
+                            riichiSticks * 1000
+                          : 0
+                        }${t("points")}`
+                        : `${yakuResult.fuRounded ?? 0} ${t("fu")}  ${yakuResult.yaku.reduce((sum, y) => sum + y.han, 0) + (yakuResult.doraHan ?? 0)
+                        } ${t("han")} ${yakuResult.score?.limit ? ` (${t(`limit.${yakuResult.score.limit}`)})` : ""} ${yakuResult.score
+                          ? yakuResult.score.tsumo
+                            ? yakuResult.score.tsumo.total +
+                            honbaCount * 300 +
+                            riichiSticks * 1000
+                            : (yakuResult.score.ron ?? 0) +
+                            honbaCount * 300 +
+                            riichiSticks * 1000
+                          : 0
+                        }${t("points")}`}
                     </Typography>
                   </Box>
                   {yakuResult.score && (
                     <Box>
-                      <Typography variant="subtitle1">{t("score")}</Typography>
-                      {yakuResult.score.tsumo ? (
-                        <Typography variant="body2">
-                          {lang === "ja"
-                            ? yakuResult.score.tsumo.dealerPay === yakuResult.score.tsumo.nonDealerPay
-                              ? t("tsumoAll", {
-                                points: yakuResult.score.tsumo.dealerPay,
-                              })
-                              : t("tsumoSplit", {
-                                dealer: yakuResult.score.tsumo.dealerPay,
-                                nonDealer: yakuResult.score.tsumo.nonDealerPay,
-                              })
-                            : yakuResult.score.tsumo.dealerPay === yakuResult.score.tsumo.nonDealerPay
-                              ? `${t("tsumoEach")} ${yakuResult.score.tsumo.dealerPay} ${t("points")}`
-                              : `${t("dealerPay")} ${yakuResult.score.tsumo.dealerPay} / ${t("nonDealerPay")} ${yakuResult.score.tsumo.nonDealerPay}`}
-                          {lang === "ja"
-                            ? ` / ${t("total")} ${yakuResult.score.tsumo.total + honbaCount * 300 + riichiSticks * 1000}${t("points")}`
-                            : ` ${t("total")}: ${yakuResult.score.tsumo.total + honbaCount * 300 + riichiSticks * 1000} ${t("points")}`}
-                        </Typography>
-                      ) : (
-                        <Typography variant="body2">
-                          {lang === "ja"
-                            ? t("ronPoints", {
-                              points: yakuResult.score.ron + honbaCount * 300 + riichiSticks * 1000,
-                            })
-                            : `${t("ron")}: ${yakuResult.score.ron + honbaCount * 300 + riichiSticks * 1000} ${t(
-                              "points"
-                            )}`}
-                        </Typography>
-                      )}
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: "auto 1fr auto",
+                          columnGap: 1.5,
+                          rowGap: 0.5,
+                          alignItems: "baseline",
+                        }}
+                      >
+                        {yakuResult.score.tsumo ? (
+                          <>
+                            <Typography variant="body2">{t("tsumo")}</Typography>
+                            <Typography variant="body2">
+                              {lang === "ja"
+                                ? yakuResult.score.tsumo.dealerPay === yakuResult.score.tsumo.nonDealerPay
+                                  ? t("tsumoAll", {
+                                    points: yakuResult.score.tsumo.dealerPay,
+                                  })
+                                  : t("tsumoSplit", {
+                                    dealer: yakuResult.score.tsumo.dealerPay,
+                                    nonDealer: yakuResult.score.tsumo.nonDealerPay,
+                                  })
+                                : yakuResult.score.tsumo.dealerPay === yakuResult.score.tsumo.nonDealerPay
+                                  ? `${t("tsumoEach")} ${yakuResult.score.tsumo.dealerPay} ${t("points")}`
+                                  : `${t("dealerPay")} ${yakuResult.score.tsumo.dealerPay} / ${t("nonDealerPay")} ${yakuResult.score.tsumo.nonDealerPay}`}
+                            </Typography>
+                            <Typography variant="body2" sx={{ textAlign: "right" }}>
+                              {yakuResult.score.tsumo.total}
+                              {t("points")}
+                            </Typography>
+                            <Typography variant="body2">+ {t("honba")}</Typography>
+                            <Box />
+                            <Typography variant="body2" sx={{ textAlign: "right" }}>
+                              {honbaCount * 300}
+                              {t("points")}
+                            </Typography>
+                            <Typography variant="body2">+ {t("riichiSticks")}</Typography>
+                            <Box />
+                            <Typography variant="body2" sx={{ textAlign: "right" }}>
+                              {riichiSticks * 1000}
+                              {t("points")}
+                            </Typography>
+                          </>
+                        ) : (
+                          <>
+                            <Typography variant="body2">{t("ron")}</Typography>
+                            <Box />
+                            <Typography variant="body2" sx={{ textAlign: "right" }}>
+                              {yakuResult.score.ron + honbaCount * 300 + riichiSticks * 1000}
+                              {t("points")}
+                            </Typography>
+                            <Typography variant="body2">+ {t("honba")}</Typography>
+                            <Box />
+                            <Typography variant="body2" sx={{ textAlign: "right" }}>
+                              {honbaCount * 300}
+                              {t("points")}
+                            </Typography>
+                            <Typography variant="body2">+ {t("riichiSticks")}</Typography>
+                            <Box />
+                            <Typography variant="body2" sx={{ textAlign: "right" }}>
+                              {riichiSticks * 1000}
+                              {t("points")}
+                            </Typography>
+                          </>
+                        )}
+                      </Box>
                     </Box>
                   )}
                   {yakuResult.notes.length > 0 && (
