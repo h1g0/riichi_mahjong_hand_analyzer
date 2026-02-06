@@ -358,6 +358,10 @@ function App() {
     [effectiveMode]
   );
 
+  const handleNumberFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+    event.currentTarget.select();
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline enableColorScheme />
@@ -450,6 +454,7 @@ function App() {
                 label={t("honba")}
                 value={honbaCount}
                 onChange={(e) => setHonbaCount(Math.max(0, Number(e.target.value) || 0))}
+                onFocus={handleNumberFocus}
                 inputRef={honbaRef}
                 slotProps={{
                   input: {
@@ -468,6 +473,7 @@ function App() {
                 label={t("riichiSticks")}
                 value={riichiSticks}
                 onChange={(e) => setRiichiSticks(Math.max(0, Number(e.target.value) || 0))}
+                onFocus={handleNumberFocus}
                 inputRef={riichiSticksRef}
                 slotProps={{
                   input: {
