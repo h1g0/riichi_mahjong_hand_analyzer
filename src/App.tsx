@@ -573,14 +573,14 @@ function App() {
                     <Typography variant="subtitle2" color="text.secondary">
                       {stat.label}
                     </Typography>
-                    <Typography variant="h5">{stat.value}</Typography>
+                    <Typography>{stat.value}</Typography>
                   </Paper>
                 </Box>
               ))}
             </Box>
             <Divider sx={{ my: 2 }} />
             <Typography variant="subtitle1">{t("improving")}</Typography>
-            <Typography variant="body2" sx={{ mt: 1 }}>
+            <Typography sx={{ mt: 1 }}>
               {improvements.length === 0
                 ? t("noImprove")
                 : tilesToDisplay(improvements.map((i) => i.tile))}
