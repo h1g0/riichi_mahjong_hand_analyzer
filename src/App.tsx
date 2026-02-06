@@ -92,6 +92,8 @@ function App() {
   const [kiriageMangan, setKiriageMangan] = useState(true);
   const [honbaCount, setHonbaCount] = useState(0);
   const [riichiSticks, setRiichiSticks] = useState(0);
+  const [honbaInput, setHonbaInput] = useState("0");
+  const [riichiInput, setRiichiInput] = useState("0");
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [doraIndicatorsInput, setDoraIndicatorsInput] = useState("");
   const [uraIndicatorsInput, setUraIndicatorsInput] = useState("");
@@ -297,6 +299,8 @@ function App() {
     setRoundWind("east");
     setHonbaCount(0);
     setRiichiSticks(0);
+    setHonbaInput("0");
+    setRiichiInput("0");
     setDoraIndicatorsInput("");
     setUraIndicatorsInput("");
   };
@@ -360,6 +364,31 @@ function App() {
 
   const handleNumberFocus = (event: React.FocusEvent<HTMLInputElement>) => {
     event.currentTarget.select();
+  };
+
+  const handleIntegerTextChange = (rawValue: string, setText: (value: string) => void) => {
+    setText(rawValue);
+  };
+
+  const normalizeIntegerOnBlur = (
+    textValue: string,
+    setText: (value: string) => void,
+    setNumber: (value: number) => void
+  ) => {
+    if (textValue.trim() === "") {
+      setText("0");
+      setNumber(0);
+      return;
+    }
+    const parsed = Number.parseFloat(textValue);
+    if (Number.isNaN(parsed)) {
+      setText("0");
+      setNumber(0);
+      return;
+    }
+    const normalized = Math.max(0, Math.floor(parsed));
+    setText(String(normalized));
+    setNumber(normalized);
   };
 
   return (
@@ -452,39 +481,47 @@ function App() {
               <TextField
                 type="number"
                 label={t("honba")}
-                value={honbaCount}
-                onChange={(e) => setHonbaCount(Math.max(0, Number(e.target.value) || 0))}
+                value={honbaInput}
+                onChange={(e) => handleIntegerTextChange(e.target.value, setHonbaInput)}
+                onBlur={() => normalizeIntegerOnBlur(honbaInput, setHonbaInput, setHonbaCount)}
                 onFocus={handleNumberFocus}
                 inputRef={honbaRef}
                 slotProps={{
                   input: {
                     endAdornment: clearAdornment(
-                      () => setHonbaCount(0),
-                      honbaCount === 0,
+                      () => {
+                        setHonbaCount(0);
+                        setHonbaInput("0");
+                      },
+                      honbaInput === "0",
                       () => honbaRef.current?.focus(),
                       { reserveSpace: true }
                     ),
                   },
-                  htmlInput: { min: 0 },
+                  htmlInput: { min: 0, inputMode: "numeric" },
                 }}
               />
               <TextField
                 type="number"
                 label={t("riichiSticks")}
-                value={riichiSticks}
-                onChange={(e) => setRiichiSticks(Math.max(0, Number(e.target.value) || 0))}
+                value={riichiInput}
+                onChange={(e) => handleIntegerTextChange(e.target.value, setRiichiInput)}
+                onBlur={() => normalizeIntegerOnBlur(riichiInput, setRiichiInput, setRiichiSticks)}
                 onFocus={handleNumberFocus}
                 inputRef={riichiSticksRef}
                 slotProps={{
                   input: {
                     endAdornment: clearAdornment(
-                      () => setRiichiSticks(0),
-                      riichiSticks === 0,
+                      () => {
+                        setRiichiSticks(0);
+                        setRiichiInput("0");
+                      },
+                      riichiInput === "0",
                       () => riichiSticksRef.current?.focus(),
                       { reserveSpace: true }
                     ),
                   },
-                  htmlInput: { min: 0 },
+                  htmlInput: { min: 0, inputMode: "numeric" },
                 }}
               />
               <TextField
