@@ -65,8 +65,8 @@
   "pinfuTsumo20": "平和ツモは20符",
   "kuipinfu30": "喰い平和は30符",
   "kiriageMangan": "切り上げ満貫",
-  "honba": "本場",
-  "riichiSticks": "リーチ棒",
+  "honba": "積み棒（○本場）",
+  "riichiSticks": "供託棒（リーチ棒）",
   "single": "単倍",
   "double": "ダブル",
   "triple": "トリプル",
@@ -92,7 +92,8 @@
     "baiman": "倍満",
     "sanbaiman": "三倍満",
     "kazoe": "数え役満",
-    "yakuman": "役満"
+    "yakuman": "役満",
+    "doubleYakuman": "ダブル役満"
   },
   "yakumanTimes": "倍",
   "seat": "自風",
@@ -112,6 +113,7 @@
     "Chuuren Poutou": "九蓮宝燈",
     "Suu Kantsu": "四槓子",
     "Suu Ankou": "四暗刻",
+    "Suu Ankou Tanki": "四暗刻単騎",
     "Daisangen": "大三元",
     "Shousangen": "小三元",
     "Daisuushi": "大四喜",

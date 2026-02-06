@@ -418,7 +418,13 @@ const evaluateStandard = (
   if (isAllGreen(counts)) yakuman.push({ name: "Ryuuiisou", yakuman: 1 });
   if (checkChuuren(counts) && menzen) yakuman.push({ name: "Chuuren Poutou", yakuman: 1 });
   if (kans.length >= 4) yakuman.push({ name: "Suu Kantsu", yakuman: 1 });
-  if (closedTriplets >= 4) yakuman.push({ name: "Suu Ankou", yakuman: 1 });
+  if (closedTriplets >= 4) {
+    if (input.isTsumo) {
+      yakuman.push({ name: "Suu Ankou", yakuman: 1 });
+    } else if (winTile !== null && pair === winTile) {
+      yakuman.push({ name: "Suu Ankou Tanki", yakuman: 2 });
+    }
+  }
 
   const dragonTriplets = triplets.filter((m) => m.tiles[0] >= 31);
   if (dragonTriplets.length >= 3) yakuman.push({ name: "Daisangen", yakuman: 1 });
@@ -753,11 +759,19 @@ export const calculateScore = (input: ScoreInput) => {
   const { han, fu, isDealer, isTsumo, yakumanMultiplier, kiriageMangan } = input;
 
   let base = 0;
-  let limit: "yakuman" | "kazoe" | "sanbaiman" | "baiman" | "haneman" | "mangan" | null = null;
+  let limit:
+    | "yakuman"
+    | "doubleYakuman"
+    | "kazoe"
+    | "sanbaiman"
+    | "baiman"
+    | "haneman"
+    | "mangan"
+    | null = null;
 
   if (yakumanMultiplier > 0) {
     base = 8000 * yakumanMultiplier;
-    limit = "yakuman";
+    limit = yakumanMultiplier >= 2 ? "doubleYakuman" : "yakuman";
   } else if (han >= 13) {
     base = 8000;
     limit = "kazoe";
