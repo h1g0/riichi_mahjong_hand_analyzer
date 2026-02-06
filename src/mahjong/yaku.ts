@@ -419,10 +419,10 @@ const evaluateStandard = (
   if (checkChuuren(counts) && menzen) yakuman.push({ name: "Chuuren Poutou", yakuman: 1 });
   if (kans.length >= 4) yakuman.push({ name: "Suu Kantsu", yakuman: 1 });
   if (closedTriplets >= 4) {
-    if (input.isTsumo) {
-      yakuman.push({ name: "Suu Ankou", yakuman: 1 });
-    } else if (winTile !== null && pair === winTile) {
+    if (winTile !== null && pair === winTile) {
       yakuman.push({ name: "Suu Ankou Tanki", yakuman: 2 });
+    } else if (input.isTsumo) {
+      yakuman.push({ name: "Suu Ankou", yakuman: 1 });
     }
   }
 

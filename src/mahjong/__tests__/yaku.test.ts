@@ -225,4 +225,16 @@ describe("yaku evaluation", () => {
     expect(result.score?.ron).toBeNull();
     expect(result.score?.tsumo?.total).toBe(48000);
   });
+
+  it("treats suu ankou tanki on tsumo as double yakuman", () => {
+    const counts = parseTiles("111222m333p444s55z");
+    const result = evaluate(counts, { winTile: parseSingleTile("5z"), isTsumo: true });
+    const yakuman = result.yakuman.find((y) => y.name === "Suu Ankou Tanki");
+    expect(yakuman?.yakuman).toBe(2);
+    expect(result.totalHan).toBeNull();
+    expect(result.fuRounded).toBeNull();
+    expect(result.score?.limit).toBe("doubleYakuman");
+    expect(result.score?.ron).toBeNull();
+    expect(result.score?.tsumo?.total).toBe(96000);
+  });
 });
