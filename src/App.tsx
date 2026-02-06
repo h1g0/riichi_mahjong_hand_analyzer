@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import "./App.css";
 import {
   AppBar,
@@ -13,6 +13,7 @@ import {
   DialogTitle,
   FormControlLabel,
   IconButton,
+  InputAdornment,
   Menu,
   Paper,
   Switch,
@@ -32,6 +33,7 @@ import {
   ListItemText,
   ListItemIcon,
 } from "@mui/material";
+import ClearIcon from "@mui/icons-material/Clear";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useTranslation } from "react-i18next";
@@ -91,6 +93,13 @@ function App() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [doraIndicatorsInput, setDoraIndicatorsInput] = useState("");
   const [uraIndicatorsInput, setUraIndicatorsInput] = useState("");
+  const handInputRef = useRef<HTMLInputElement>(null);
+  const honbaRef = useRef<HTMLInputElement>(null);
+  const riichiSticksRef = useRef<HTMLInputElement>(null);
+  const doraInputRef = useRef<HTMLInputElement>(null);
+  const uraInputRef = useRef<HTMLInputElement>(null);
+  const winTileInputRef = useRef<HTMLInputElement>(null);
+  const meldInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
   const setLanguage = (next: "ja" | "en") => {
     setLang(next);
@@ -275,7 +284,63 @@ function App() {
   };
 
   const removeMeld = (id: number) => {
+    delete meldInputRefs.current[id];
     setMelds((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  const resetTableInputs = () => {
+    setRoundWind("east");
+    setHonbaCount(0);
+    setRiichiSticks(0);
+    setDoraIndicatorsInput("");
+    setUraIndicatorsInput("");
+  };
+
+  const resetHandInputs = () => {
+    setHandInput("");
+    setMelds([]);
+    setSeatWind("east");
+    setWinTileInput("");
+    setIsTsumo(false);
+    setIsRiichi(false);
+    setIsDoubleRiichi(false);
+    setIsIppatsu(false);
+    setIsRinshan(false);
+    setIsHaitei(false);
+    setIsHoutei(false);
+    setIsChankan(false);
+    setIsTenhou(false);
+    setIsChiihou(false);
+  };
+
+  const clearAdornment = (
+    onClick: () => void,
+    disabled: boolean,
+    onFocus?: () => void,
+    options?: { reserveSpace?: boolean }
+  ) => {
+    if (disabled && !options?.reserveSpace) return null;
+    const isHidden = disabled;
+    return (
+      <InputAdornment position="end">
+        <IconButton
+          aria-label={t("clear")}
+          aria-hidden={isHidden || undefined}
+          edge="end"
+          size="small"
+          onClick={() => {
+            onClick();
+            onFocus?.();
+          }}
+          onMouseDown={(e) => e.preventDefault()}
+          disabled={disabled}
+          tabIndex={isHidden ? -1 : 0}
+          sx={{ visibility: isHidden ? "hidden" : "visible" }}
+        >
+          <ClearIcon fontSize="small" />
+        </IconButton>
+      </InputAdornment>
+    );
   };
 
   const theme = useMemo(
@@ -334,8 +399,11 @@ function App() {
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Paper elevation={2} sx={{ p: 3 }}>
-            <Stack spacing={1}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
               <Typography variant="h5">{t("table")}</Typography>
+              <Button variant="outlined" onClick={resetTableInputs}>
+                {t("clear")}
+              </Button>
             </Stack>
             <Divider sx={{ my: 2 }} />
             <Box
@@ -364,14 +432,36 @@ function App() {
                 label={t("honba")}
                 value={honbaCount}
                 onChange={(e) => setHonbaCount(Math.max(0, Number(e.target.value) || 0))}
-                inputProps={{ min: 0 }}
+                inputRef={honbaRef}
+                slotProps={{
+                  input: {
+                    endAdornment: clearAdornment(
+                      () => setHonbaCount(0),
+                      honbaCount === 0,
+                      () => honbaRef.current?.focus(),
+                      { reserveSpace: true }
+                    ),
+                  },
+                  htmlInput: { min: 0 },
+                }}
               />
               <TextField
                 type="number"
                 label={t("riichiSticks")}
                 value={riichiSticks}
                 onChange={(e) => setRiichiSticks(Math.max(0, Number(e.target.value) || 0))}
-                inputProps={{ min: 0 }}
+                inputRef={riichiSticksRef}
+                slotProps={{
+                  input: {
+                    endAdornment: clearAdornment(
+                      () => setRiichiSticks(0),
+                      riichiSticks === 0,
+                      () => riichiSticksRef.current?.focus(),
+                      { reserveSpace: true }
+                    ),
+                  },
+                  htmlInput: { min: 0 },
+                }}
               />
               <TextField
                 fullWidth
@@ -380,6 +470,16 @@ function App() {
                 onChange={(e) => setDoraIndicatorsInput(e.target.value)}
                 placeholder="3m7p1z"
                 helperText={t("doraHelp")}
+                inputRef={doraInputRef}
+                slotProps={{
+                  input: {
+                    endAdornment: clearAdornment(
+                      () => setDoraIndicatorsInput(""),
+                      doraIndicatorsInput.length === 0,
+                      () => doraInputRef.current?.focus()
+                    ),
+                  },
+                }}
               />
               <TextField
                 fullWidth
@@ -388,13 +488,26 @@ function App() {
                 onChange={(e) => setUraIndicatorsInput(e.target.value)}
                 placeholder="4m2p3z"
                 helperText={t("doraHelp")}
+                inputRef={uraInputRef}
+                slotProps={{
+                  input: {
+                    endAdornment: clearAdornment(
+                      () => setUraIndicatorsInput(""),
+                      uraIndicatorsInput.length === 0,
+                      () => uraInputRef.current?.focus()
+                    ),
+                  },
+                }}
               />
             </Box>
           </Paper>
 
           <Paper elevation={2} sx={{ p: 3 }}>
-            <Stack spacing={1}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
               <Typography variant="h5">{t("handInput")}</Typography>
+              <Button variant="outlined" onClick={resetHandInputs}>
+                {t("clear")}
+              </Button>
             </Stack>
             <Divider sx={{ my: 2 }} />
             <Box
@@ -410,8 +523,18 @@ function App() {
                   label={t("handInput")}
                   value={handInput}
                   onChange={(e) => setHandInput(e.target.value)}
-                  placeholder="123m456p789s12344z"
+                  placeholder={defaultHand}
                   helperText={t("handHelp")}
+                  inputRef={handInputRef}
+                  slotProps={{
+                    input: {
+                      endAdornment: clearAdornment(
+                        () => setHandInput(""),
+                        handInput.length === 0,
+                        () => handInputRef.current?.focus()
+                      ),
+                    },
+                  }}
                 />
               </Box>
               <Box>
@@ -433,6 +556,18 @@ function App() {
                             value={m.text}
                             onChange={(e) => updateMeld(m.id, { text: e.target.value })}
                             placeholder={t("meldPlaceholder")}
+                            inputRef={(el) => {
+                              meldInputRefs.current[m.id] = el;
+                            }}
+                            slotProps={{
+                              input: {
+                                endAdornment: clearAdornment(
+                                  () => updateMeld(m.id, { text: "" }),
+                                  m.text.length === 0,
+                                  () => meldInputRefs.current[m.id]?.focus()
+                                ),
+                              },
+                            }}
                           />
                         </Box>
                         <Box sx={{ gridColumn: { xs: "1 / -1", md: "span 3" } }}>
@@ -491,6 +626,16 @@ function App() {
                   onChange={(e) => setWinTileInput(e.target.value)}
                   placeholder="5m"
                   helperText={t("winTileHelp")}
+                  inputRef={winTileInputRef}
+                  slotProps={{
+                    input: {
+                      endAdornment: clearAdornment(
+                        () => setWinTileInput(""),
+                        winTileInput.length === 0,
+                        () => winTileInputRef.current?.focus()
+                      ),
+                    },
+                  }}
                 />
               </Box>
             </Box>
