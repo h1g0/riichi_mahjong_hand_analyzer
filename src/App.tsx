@@ -32,6 +32,7 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
+  useMediaQuery,
 } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
@@ -64,6 +65,7 @@ function App() {
   const [melds, setMelds] = useState<MeldInput[]>([]);
   const [seatWind, setSeatWind] = useState("east");
   const [roundWind, setRoundWind] = useState("east");
+  const [colorMode, setColorMode] = useState<"system" | "light" | "dark">("system");
   const [winTileInput, setWinTileInput] = useState("");
   const [isTsumo, setIsTsumo] = useState(false);
   const [isRiichi, setIsRiichi] = useState(false);
@@ -105,6 +107,9 @@ function App() {
     setLang(next);
     void i18n.changeLanguage(next);
   };
+
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const effectiveMode = colorMode === "system" ? (prefersDarkMode ? "dark" : "light") : colorMode;
 
   const openMenu = (event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchor(event.currentTarget);
@@ -347,15 +352,15 @@ function App() {
     () =>
       createTheme({
         palette: {
-          mode: "light",
+          mode: effectiveMode,
         },
       }),
-    []
+    [effectiveMode]
   );
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
+      <CssBaseline enableColorScheme />
       <AppBar position="sticky" color="primary">
         <Toolbar>
           <Box sx={{ flexGrow: 1 }}>
@@ -394,6 +399,19 @@ function App() {
         >
           English
         </MenuItem>
+        <MenuItem disabled>{t("theme.label", "Theme")}</MenuItem>
+        {(["system", "light", "dark"] as const).map((mode) => (
+          <MenuItem
+            key={mode}
+            selected={colorMode === mode}
+            onClick={() => {
+              setColorMode(mode);
+              closeMenu();
+            }}
+          >
+            {t(`theme.${mode}`, mode === "system" ? "System" : mode === "light" ? "Light" : "Dark")}
+          </MenuItem>
+        ))}
       </Menu>
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
