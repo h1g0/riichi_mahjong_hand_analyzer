@@ -50,6 +50,12 @@
   "tip1": "Use notation like 123m456p789s12344z.",
   "tip2": "1m-9m: characters 1-9 0m: character red 5 / 1p-9p: dots 1-9 0p: dot red 5 / 1s-9s: bamboo 1-9 0s: bamboo red 5 / 1z-7z: east-south-west-north-white-green-red.",
   "lang": "Language",
+  "theme": {
+    "label": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
   "settings": "Options",
   "settingsTitle": "Options",
   "close": "Close",
