@@ -199,6 +199,13 @@ function App() {
     return shantenAll(parsed.handCounts, openMelds);
   }, [parsed.handCounts, parsed.meldList.length]);
 
+  const formatShantenValue = (value?: number | null) => {
+    if (value === null || value === undefined) return t("notAvailable");
+    if (value === -1) return t("agari");
+    if (value === 0) return t("tenpai");
+    return value;
+  };
+
   const improvements = useMemo(() => {
     const openMelds = parsed.meldList.length;
     return improvingTiles(parsed.handCounts, openMelds);
@@ -769,10 +776,10 @@ function App() {
               }}
             >
               {[
-                { label: t("standard"), value: shanten.standard },
-                { label: t("chiitoi"), value: shanten.chiitoi ?? "N/A" },
-                { label: t("kokushi"), value: shanten.kokushi ?? "N/A" },
-                { label: t("min"), value: shanten.min },
+                { label: t("standard"), value: formatShantenValue(shanten.standard) },
+                { label: t("chiitoi"), value: formatShantenValue(shanten.chiitoi) },
+                { label: t("kokushi"), value: formatShantenValue(shanten.kokushi) },
+                { label: t("min"), value: formatShantenValue(shanten.min) },
               ].map((stat) => (
                 <Box key={stat.label}>
                   <Paper variant="outlined" sx={{ p: 2 }}>
