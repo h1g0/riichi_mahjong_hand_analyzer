@@ -293,6 +293,11 @@ function App() {
     setMelds((prev) => [...prev, { id: Date.now(), text: "", open: true }]);
   };
 
+  const clearMelds = () => {
+    meldInputRefs.current = {};
+    setMelds([]);
+  };
+
   const updateMeld = (id: number, patch: Partial<MeldInput>) => {
     setMelds((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
   };
@@ -314,7 +319,7 @@ function App() {
 
   const resetHandInputs = () => {
     setHandInput("");
-    setMelds([]);
+    clearMelds();
     setSeatWind("east");
     setWinTileInput("");
     setIsTsumo(false);
@@ -376,6 +381,8 @@ function App() {
   const handleIntegerTextChange = (rawValue: string, setText: (value: string) => void) => {
     setText(rawValue);
   };
+
+  const isRiichiLike = isRiichi || isDoubleRiichi;
 
   const normalizeIntegerOnBlur = (
     textValue: string,
@@ -665,7 +672,11 @@ function App() {
                       </Box>
                     </Paper>
                   ))}
-                  <Button variant="contained" onClick={addMeld} disabled={melds.length >= 4}>
+                  <Button
+                    variant="contained"
+                    onClick={addMeld}
+                    disabled={melds.length >= 4 || isRiichiLike}
+                  >
                     {t("addMeld")}
                   </Button>
                 </Stack>
@@ -716,36 +727,54 @@ function App() {
               }}
             >
               {[
-                { label: t("tsumo"), value: isTsumo, set: setIsTsumo },
+                { label: t("tsumo"), value: isTsumo, set: setIsTsumo, disabled: false },
                 {
                   label: t("riichi"),
                   value: isRiichi,
+                  disabled: false,
                   set: (v: boolean) => {
                     setIsRiichi(v);
-                    if (v) setIsDoubleRiichi(false);
+                    if (v) {
+                      setIsDoubleRiichi(false);
+                      clearMelds();
+                    } else if (!isDoubleRiichi) {
+                      setIsIppatsu(false);
+                    }
                   },
                 },
                 {
                   label: t("doubleRiichi"),
                   value: isDoubleRiichi,
+                  disabled: false,
                   set: (v: boolean) => {
                     setIsDoubleRiichi(v);
-                    if (v) setIsRiichi(false);
+                    if (v) {
+                      setIsRiichi(false);
+                      clearMelds();
+                    } else if (!isRiichi) {
+                      setIsIppatsu(false);
+                    }
                   },
                 },
-                { label: t("ippatsu"), value: isIppatsu, set: setIsIppatsu },
-                { label: t("rinshan"), value: isRinshan, set: setIsRinshan },
-                { label: t("haitei"), value: isHaitei, set: setIsHaitei },
-                { label: t("houtei"), value: isHoutei, set: setIsHoutei },
-                { label: t("chankan"), value: isChankan, set: setIsChankan },
-                { label: t("tenhou"), value: isTenhou, set: setIsTenhou },
-                { label: t("chiihou"), value: isChiihou, set: setIsChiihou },
+                {
+                  label: t("ippatsu"),
+                  value: isIppatsu,
+                  set: setIsIppatsu,
+                  disabled: !isRiichiLike,
+                },
+                { label: t("rinshan"), value: isRinshan, set: setIsRinshan, disabled: false },
+                { label: t("haitei"), value: isHaitei, set: setIsHaitei, disabled: false },
+                { label: t("houtei"), value: isHoutei, set: setIsHoutei, disabled: false },
+                { label: t("chankan"), value: isChankan, set: setIsChankan, disabled: false },
+                { label: t("tenhou"), value: isTenhou, set: setIsTenhou, disabled: false },
+                { label: t("chiihou"), value: isChiihou, set: setIsChiihou, disabled: false },
               ].map((opt) => (
                 <Box key={opt.label}>
                   <FormControlLabel
                     control={
                       <Switch
                         checked={opt.value}
+                        disabled={opt.disabled}
                         onChange={(e) => opt.set(e.target.checked)}
                       />
                     }
