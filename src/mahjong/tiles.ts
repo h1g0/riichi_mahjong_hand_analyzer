@@ -99,8 +99,29 @@ export const countRedFives = (input: string) => {
   return total;
 };
 
-export const parseMeld = (input: string, open = true): Meld | null => {
+// Normalize "1m2m3m" style input to "123m" style for parseMeld.
+// If tiles span multiple suits, returns the input unchanged (will fail validation).
+const normalizeToSingleSuit = (input: string): string => {
   const compact = input.replace(/\s+/g, "").toLowerCase();
+  type Suit = "m" | "p" | "s" | "z";
+  const tiles: { digit: string; suit: Suit }[] = [];
+  let digits = "";
+  for (const ch of compact) {
+    if (ch >= "0" && ch <= "9") {
+      digits += ch;
+    } else if (ch === "m" || ch === "p" || ch === "s" || ch === "z") {
+      for (const d of digits) tiles.push({ digit: d, suit: ch as Suit });
+      digits = "";
+    }
+  }
+  if (tiles.length === 0) return compact;
+  const suits = new Set(tiles.map((t) => t.suit));
+  if (suits.size !== 1) return compact;
+  return tiles.map((t) => t.digit).join("") + tiles[0].suit;
+};
+
+export const parseMeld = (input: string, open = true): Meld | null => {
+  const compact = normalizeToSingleSuit(input);
   if (compact.length < 3) return null;
   const suit = compact[compact.length - 1] as "m" | "p" | "s" | "z";
   if (!["m", "p", "s", "z"].includes(suit)) return null;

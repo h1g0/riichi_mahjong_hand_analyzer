@@ -33,12 +33,15 @@ import {
   ListItemText,
   ListItemIcon,
   useMediaQuery,
+  Popper,
+  Fade,
 } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useTranslation } from "react-i18next";
 import type { Meld } from "./mahjong/tiles";
+import { TileDisplay, TilePicker } from "./TilePicker";
 import {
   countsFromMelds,
   countRedFives,
@@ -95,6 +98,14 @@ function App() {
   const [honbaInput, setHonbaInput] = useState("0");
   const [riichiInput, setRiichiInput] = useState("0");
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [activeField, setActiveField] = useState<"hand" | "winTile" | "dora" | "ura" | number>("hand");
+  const [pickerAnchorEl, setPickerAnchorEl] = useState<HTMLElement | null>(null);
+
+  const openPicker = (field: "hand" | "winTile" | "dora" | "ura" | number, el: HTMLElement | null) => {
+    setActiveField(field);
+    setPickerAnchorEl(el);
+  };
+  const closePicker = () => setPickerAnchorEl(null);
   const [doraIndicatorsInput, setDoraIndicatorsInput] = useState("");
   const [uraIndicatorsInput, setUraIndicatorsInput] = useState("");
   const handInputRef = useRef<HTMLInputElement>(null);
@@ -384,6 +395,24 @@ function App() {
 
   const isRiichiLike = isRiichi || isDoubleRiichi;
 
+  const handleTileClick = (tileStr: string) => {
+    if (activeField === "hand") {
+      setHandInput((prev) => prev + tileStr);
+    } else if (activeField === "winTile") {
+      setWinTileInput((prev) => prev + tileStr);
+    } else if (activeField === "dora") {
+      setDoraIndicatorsInput((prev) => prev + tileStr);
+    } else if (activeField === "ura") {
+      setUraIndicatorsInput((prev) => prev + tileStr);
+    } else {
+      // meld ID
+      const id = activeField;
+      setMelds((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, text: m.text + tileStr } : m))
+      );
+    }
+  };
+
   const normalizeIntegerOnBlur = (
     textValue: string,
     setText: (value: string) => void,
@@ -543,6 +572,8 @@ function App() {
                 label={t("dora")}
                 value={doraIndicatorsInput}
                 onChange={(e) => setDoraIndicatorsInput(e.target.value)}
+                onFocus={() => openPicker("dora", doraInputRef.current)}
+                onBlur={closePicker}
                 placeholder="3m7p1z"
                 helperText={t("doraHelp")}
                 inputRef={doraInputRef}
@@ -561,6 +592,8 @@ function App() {
                 label={t("uraDora")}
                 value={uraIndicatorsInput}
                 onChange={(e) => setUraIndicatorsInput(e.target.value)}
+                onFocus={() => openPicker("ura", uraInputRef.current)}
+                onBlur={closePicker}
                 placeholder="4m2p3z"
                 helperText={t("doraHelp")}
                 inputRef={uraInputRef}
@@ -593,11 +626,14 @@ function App() {
               }}
             >
               <Box>
+                <TileDisplay input={handInput} />
                 <TextField
                   fullWidth
                   label={t("handInput")}
                   value={handInput}
                   onChange={(e) => setHandInput(e.target.value)}
+                  onFocus={() => openPicker("hand", handInputRef.current)}
+                  onBlur={closePicker}
                   placeholder={defaultHand}
                   helperText={t("handHelp")}
                   inputRef={handInputRef}
@@ -630,6 +666,8 @@ function App() {
                             label={t("melds")}
                             value={m.text}
                             onChange={(e) => updateMeld(m.id, { text: e.target.value })}
+                            onFocus={() => openPicker(m.id, meldInputRefs.current[m.id])}
+                            onBlur={closePicker}
                             placeholder={t("meldPlaceholder")}
                             inputRef={(el) => {
                               meldInputRefs.current[m.id] = el;
@@ -698,11 +736,14 @@ function App() {
                 </FormControl>
               </Box>
               <Box>
+                <TileDisplay input={winTileInput} />
                 <TextField
                   fullWidth
                   label={t("winTile")}
                   value={winTileInput}
                   onChange={(e) => setWinTileInput(e.target.value)}
+                  onFocus={() => openPicker("winTile", winTileInputRef.current)}
+                  onBlur={closePicker}
                   placeholder="5m"
                   helperText={t("winTileHelp")}
                   inputRef={winTileInputRef}
@@ -1001,6 +1042,26 @@ function App() {
           </Paper>
         </Stack>
       </Container>
+
+      <Popper
+        open={Boolean(pickerAnchorEl)}
+        anchorEl={pickerAnchorEl}
+        placement="bottom-start"
+        transition
+        sx={{ zIndex: 1300 }}
+      >
+        {({ TransitionProps }) => (
+          <Fade {...TransitionProps} timeout={150}>
+            <Paper
+              elevation={6}
+              sx={{ p: 1.5, mt: 0.5 }}
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <TilePicker onTileClick={handleTileClick} redDoraEnabled={redDoraEnabled} />
+            </Paper>
+          </Fade>
+        )}
+      </Popper>
 
       <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{t("settingsTitle")}</DialogTitle>
