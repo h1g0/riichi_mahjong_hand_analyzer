@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import {
   AppBar,
@@ -40,8 +40,8 @@ import ClearIcon from "@mui/icons-material/Clear";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useTranslation } from "react-i18next";
-import type { Meld } from "./mahjong/tiles";
-import { TileDisplay, TilePicker } from "./TilePicker";
+import type { CalledFrom, Meld } from "./mahjong/tiles";
+import { MeldDisplay, TileDisplay, TilePicker } from "./TilePicker";
 import {
   countsFromMelds,
   countRedFives,
@@ -57,7 +57,7 @@ import { shantenAll } from "./mahjong/shanten";
 import { improvingTiles } from "./mahjong/waits";
 import { evaluateYaku } from "./mahjong/yaku";
 
-type MeldInput = { id: number; text: string; open: boolean };
+type MeldInput = { id: number; text: string; open: boolean; calledFrom: CalledFrom };
 
 const defaultHand = "123m456p789s12344z";
 
@@ -178,6 +178,15 @@ function App() {
 
     return { handCounts, meldList, totalCounts, errors, kanCount };
   }, [handInput, melds, t]);
+
+  const hasOpenMeld = parsed.meldList.some((meld) => meld.open);
+
+  useEffect(() => {
+    if (!hasOpenMeld) return;
+    setIsRiichi(false);
+    setIsDoubleRiichi(false);
+    setIsIppatsu(false);
+  }, [hasOpenMeld]);
 
   const doraIndicators = useMemo(() => {
     const counts = parseTiles(doraIndicatorsInput);
@@ -301,7 +310,10 @@ function App() {
   ]);
 
   const addMeld = () => {
-    setMelds((prev) => [...prev, { id: Date.now(), text: "", open: true }]);
+    setMelds((prev) => [
+      ...prev,
+      { id: Date.now(), text: "", open: true, calledFrom: "left" },
+    ]);
   };
 
   const clearMelds = () => {
@@ -652,6 +664,19 @@ function App() {
                 <Stack spacing={1}>
                   {melds.map((m) => (
                     <Paper key={m.id} variant="outlined" sx={{ p: 1.5 }}>
+                      {(() => {
+                        const parsedMeld = parseMeld(m.text, m.open);
+                        return parsedMeld ? (
+                          <MeldDisplay
+                            input={m.text}
+                            type={parsedMeld.type}
+                            open={parsedMeld.type === "kan" ? m.open : true}
+                            calledFrom={parsedMeld.type === "chi" ? "left" : m.calledFrom}
+                          />
+                        ) : (
+                          <TileDisplay input={m.text} />
+                        );
+                      })()}
                       <Box
                         sx={{
                           display: "grid",
@@ -660,7 +685,7 @@ function App() {
                           gridTemplateColumns: { xs: "1fr", md: "repeat(12, 1fr)" },
                         }}
                       >
-                        <Box sx={{ gridColumn: { xs: "1 / -1", md: "span 6" } }}>
+                        <Box sx={{ gridColumn: { xs: "1 / -1", md: "span 5" } }}>
                           <TextField
                             fullWidth
                             label={t("melds")}
@@ -683,6 +708,36 @@ function App() {
                             }}
                           />
                         </Box>
+                        <Box sx={{ gridColumn: { xs: "1 / -1", md: "span 2" } }}>
+                          {(() => {
+                            const parsedMeld = parseMeld(m.text, m.open);
+                            if (
+                              !parsedMeld ||
+                              parsedMeld.type === "chi" ||
+                              (parsedMeld.type === "kan" && !m.open)
+                            ) {
+                              return null;
+                            }
+                            return (
+                              <FormControl fullWidth size="small">
+                                <InputLabel>{t("calledFrom")}</InputLabel>
+                                <Select
+                                  value={m.calledFrom}
+                                  label={t("calledFrom")}
+                                  onChange={(e) =>
+                                    updateMeld(m.id, { calledFrom: e.target.value as CalledFrom })
+                                  }
+                                >
+                                  {(["left", "opposite", "right"] as const).map((from) => (
+                                    <MenuItem key={from} value={from}>
+                                      {t(`calledFromOptions.${from}`)}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                            );
+                          })()}
+                        </Box>
                         <Box sx={{ gridColumn: { xs: "1 / -1", md: "span 3" } }}>
                           {(() => {
                             const parsedMeld = parseMeld(m.text, m.open);
@@ -697,12 +752,12 @@ function App() {
                                     onChange={(e) => updateMeld(m.id, { open: e.target.checked })}
                                   />
                                 }
-                                label={t("kanOpen")}
+                                label={m.open ? t("kanOpen") : t("kanClosed")}
                               />
                             );
                           })()}
                         </Box>
-                        <Box sx={{ gridColumn: { xs: "1 / -1", md: "span 3" } }}>
+                        <Box sx={{ gridColumn: { xs: "1 / -1", md: "span 2" } }}>
                           <Button variant="outlined" color="warning" onClick={() => removeMeld(m.id)}>
                             {t("remove")}
                           </Button>
@@ -713,7 +768,7 @@ function App() {
                   <Button
                     variant="contained"
                     onClick={addMeld}
-                    disabled={melds.length >= 4 || isRiichiLike}
+                    disabled={melds.length >= 4}
                   >
                     {t("addMeld")}
                   </Button>
@@ -772,12 +827,11 @@ function App() {
                 {
                   label: t("riichi"),
                   value: isRiichi,
-                  disabled: false,
+                  disabled: hasOpenMeld,
                   set: (v: boolean) => {
                     setIsRiichi(v);
                     if (v) {
                       setIsDoubleRiichi(false);
-                      clearMelds();
                     } else if (!isDoubleRiichi) {
                       setIsIppatsu(false);
                     }
@@ -786,12 +840,11 @@ function App() {
                 {
                   label: t("doubleRiichi"),
                   value: isDoubleRiichi,
-                  disabled: false,
+                  disabled: hasOpenMeld,
                   set: (v: boolean) => {
                     setIsDoubleRiichi(v);
                     if (v) {
                       setIsRiichi(false);
-                      clearMelds();
                     } else if (!isRiichi) {
                       setIsIppatsu(false);
                     }
@@ -824,6 +877,11 @@ function App() {
                 </Box>
               ))}
             </Box>
+            {hasOpenMeld && (
+              <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
+                {t("riichiUnavailableWithOpenMeld")}
+              </Typography>
+            )}
             {parsed.errors.length > 0 && (
               <Box sx={{ mt: 2 }}>
                 {parsed.errors.map((e) => (
