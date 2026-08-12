@@ -2,10 +2,23 @@ export type TileIndex = number;
 
 export type MeldType = "chi" | "pon" | "kan";
 
+export type CalledFrom = "left" | "opposite" | "right";
+
 export type Meld = {
   tiles: TileIndex[];
   type: MeldType;
   open: boolean;
+};
+
+/** The visual position of the discarded tile in an open meld. */
+export const calledTilePosition = (
+  type: MeldType,
+  calledFrom: CalledFrom = "left"
+): number => {
+  if (type === "chi" || calledFrom === "left") return 0;
+  if (calledFrom === "opposite") return 1;
+  // A tile called from the player on the right is placed at the far right.
+  return type === "kan" ? 3 : 2;
 };
 
 const SUIT_OFFSETS = {

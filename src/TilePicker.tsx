@@ -1,4 +1,6 @@
 import { Box } from "@mui/material";
+import type { CalledFrom, MeldType } from "./mahjong/tiles";
+import { calledTilePosition } from "./mahjong/tiles";
 
 const tileImages = import.meta.glob<{ default: string }>("./images/tiles/*.png", { eager: true });
 
@@ -8,6 +10,8 @@ const getTileImageUrl = (filename: string): string => {
 };
 
 const TILE_HEIGHT = 48;
+const TILE_WIDTH = TILE_HEIGHT * (111 / 150);
+const SIDEWAYS_TILE_OFFSET = (TILE_HEIGHT - TILE_WIDTH) / 2;
 
 export function parseHandDisplay(input: string): string[] {
   const compact = input.replace(/\s+/g, "").toLowerCase();
@@ -112,6 +116,47 @@ export function TileDisplay({ input }: { input: string }) {
           sx={{ height: TILE_HEIGHT }}
         />
       ))}
+    </Box>
+  );
+}
+
+type MeldDisplayProps = {
+  input: string;
+  type: MeldType;
+  open: boolean;
+  calledFrom?: CalledFrom;
+};
+
+export function MeldDisplay({ input, type, open, calledFrom = "left" }: MeldDisplayProps) {
+  const tiles = parseHandDisplay(input);
+  if (tiles.length === 0) return null;
+  const sidewaysIndex = open ? calledTilePosition(type, calledFrom) : -1;
+
+  return (
+    <Box
+      aria-label={`${type} meld`}
+      sx={{ display: "flex", alignItems: "flex-end", gap: 0.25, minHeight: TILE_HEIGHT + 14, mb: 1 }}
+    >
+      {tiles.map((filename, i) => {
+        const sideways = i === sidewaysIndex;
+        const displayedFilename = type === "kan" && !open && (i === 0 || i === 3) ? "back" : filename;
+        return (
+          <Box
+            key={i}
+            component="img"
+            src={getTileImageUrl(displayedFilename)}
+            alt={displayedFilename}
+            data-sideways={sideways || undefined}
+            sx={{
+              height: TILE_HEIGHT,
+              transform: sideways
+                ? `translateY(${SIDEWAYS_TILE_OFFSET}px) rotate(-90deg)`
+                : undefined,
+              mx: sideways ? `${SIDEWAYS_TILE_OFFSET}px` : 0,
+            }}
+          />
+        );
+      })}
     </Box>
   );
 }
